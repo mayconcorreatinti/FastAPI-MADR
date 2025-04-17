@@ -1,0 +1,43 @@
+[project]
+name = "tcc-my-project"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "mayconcorreatinti",email = "maycon326754@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12,<4.0"
+dependencies = [
+    "pyjwt (>=2.10.1,<3.0.0)",
+    "pydantic-settings (>=2.8.1,<3.0.0)",
+    "sqlalchemy (>=2.0.40,<3.0.0)",
+    "alembic (>=1.15.2,<2.0.0)",
+    "pydantic[email] (>=2.11.3,<3.0.0)",
+    "fastapi[standard] (>=0.115.12,<0.116.0)",
+    "pwdlib[argon2] (>=0.2.1,<0.3.0)",
+    "pytest (>=8.3.5,<9.0.0)",
+    "pytest-cov (>=6.1.1,<7.0.0)",
+    "ruff (>=0.11.6,<0.12.0)",
+    "black (>=25.1.0,<26.0.0)",
+    "autopep8 (>=2.3.2,<3.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff.lint]
+select = ["E","F","UP","B","SIM","I",]
+
+[tool.ruff.format]
+preview = true
+quote-style = 'single'
+
+[tool.poetry.group.dev.dependencies]
+taskipy = "^1.14.1"
+
+[tool.taskipy.tasks]
+run = 'fastapi dev tcc_my_project/routers/accounts.py'
+test = 'pytest --cov=tcc_my_project -vv'
+post_test= 'coverage html'
