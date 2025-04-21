@@ -3,7 +3,7 @@ from http import HTTPStatus
 
 def test_create_account(client):
     response = client.post(
-        "/account",json={
+        "/accounts",json={
             "username": "string",
             "email": "user@example.com",
             "password": "string"
@@ -20,7 +20,7 @@ def test_create_account(client):
 
 def test_change_account(client, token, user):
     response = client.put(
-        f"/account/{user.id}",json={
+        f"/accounts/{user.id}",json={
             "username": "testtest",
             "email": "testtest@example.com",
             "password": "string",
@@ -37,28 +37,28 @@ def test_change_account(client, token, user):
 
 def test_delete_account(client, token, user):
     response = client.delete(
-        f"/account/{user.id}", headers={"Authorization": f"Bearer {token}"}
+        f"/accounts/{user.id}", headers={"Authorization": f"Bearer {token}"}
     )
-
+    
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {"message": "User deleted!"}
 
 
 def test_token(client, user):
     response = client.post(
-        "/token", data={
+        "accounts/token", data={
             "username": user.email, 
             "password": user.clear_password
         }
     )
-
+    
     assert response.status_code == HTTPStatus.CREATED
     assert "access_token" in response.json()
 
 
 def test_refresh_token(client, token):
     response = client.post(
-        "/refresh-token", headers={"Authorization": f"Bearer {token}"}
+        "accounts/refresh-token", headers={"Authorization": f"Bearer {token}"}
     )
 
     assert response.status_code == HTTPStatus.CREATED

@@ -38,6 +38,6 @@ quote-style = 'single'
 taskipy = "^1.14.1"
 
 [tool.taskipy.tasks]
-run = 'fastapi dev tcc_my_project/routers/accounts.py'
+run = 'fastapi dev tcc_my_project/app.py'
 test = 'pytest --cov=tcc_my_project -vv'
 post_test= 'coverage html'

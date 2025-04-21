@@ -1,19 +1,22 @@
 from http import HTTPStatus
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, HTTPException,APIRouter
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import Select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from tcc_my_project.database import get_session
 from tcc_my_project.models import User
-from tcc_my_project.schemas import PublicCredentials, Token, credentials, message
+from tcc_my_project.schemas import PublicCredentials, Token, Credentials, Message
 from tcc_my_project.security import authenticated_user, get_token, hash, verify_password
 
 
-app = FastAPI()
+router = APIRouter(tags=["accounts"],prefix="/accounts")
 
-@app.post("/account", response_model=PublicCredentials,status_code=HTTPStatus.CREATED)
-def create_account(account: credentials,session: Session = Depends(get_session)):
+@router.post("/", response_model=PublicCredentials,status_code=HTTPStatus.CREATED)
+def create_account(
+    account: Credentials,
+    session: Session = Depends(get_session)
+):
     user = session.scalar(
         Select(User).where(
             (account.username == User.username) | (account.email == User.email)
@@ -45,8 +48,13 @@ def create_account(account: credentials,session: Session = Depends(get_session))
     return response
 
 
-@app.put("/account/{id}", response_model=PublicCredentials)
-def change_account(id: int,account: credentials,session: Session = Depends(get_session),user=Depends(authenticated_user)):
+@router.put("/{id}", response_model=PublicCredentials)
+def change_account(
+    id: int,
+    account: Credentials,
+    session: Session = Depends(get_session),
+    user=Depends(authenticated_user)
+):
     if id != user.id:
         raise HTTPException(
             detail="unauthorized request", status_code=HTTPStatus.UNAUTHORIZED
@@ -59,7 +67,7 @@ def change_account(id: int,account: credentials,session: Session = Depends(get_s
         response.email = account.email
         response.password = hash(account.password)
 
-        session.add(response)
+
         session.commit()
         session.refresh(response)
     except IntegrityError:
@@ -70,8 +78,12 @@ def change_account(id: int,account: credentials,session: Session = Depends(get_s
     return response
 
 
-@app.delete("/account/{id}", response_model=message)
-def delete_account(id: int, session: Session = Depends(get_session), user=Depends(authenticated_user)):
+@router.delete("/{id}", response_model=Message)
+def delete_account(
+    id: int,
+    session: Session = Depends(get_session),
+    user=Depends(authenticated_user)
+):
     if id != user.id:
         raise HTTPException(
             detail="unauthorized request", status_code=HTTPStatus.UNAUTHORIZED
@@ -85,8 +97,11 @@ def delete_account(id: int, session: Session = Depends(get_session), user=Depend
     return {"message": "User deleted!"}
 
 
-@app.post("/token", status_code=HTTPStatus.CREATED, response_model=Token)
-def create_token(data: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_session)):
+@router.post("/token", status_code=HTTPStatus.CREATED, response_model=Token)
+def create_token(
+    data: OAuth2PasswordRequestForm = Depends(),
+    session: Session = Depends(get_session)
+):
     response = session.scalar(Select(User).where(User.email == data.username))
 
     if response is None:
@@ -104,8 +119,10 @@ def create_token(data: OAuth2PasswordRequestForm = Depends(), session: Session =
     return {"access_token": token, "token_type": "bearer"}
 
 
-@app.post("/refresh-token", status_code=HTTPStatus.CREATED, response_model=Token)
-def refresh_token(user=Depends(authenticated_user)):
+@router.post("/refresh-token", status_code=HTTPStatus.CREATED, response_model=Token)
+def refresh_token(
+    user=Depends(authenticated_user)
+):
     token = get_token(data={"email": user.email})
 
     return {"access_token": token, "token_type": "bearer"}

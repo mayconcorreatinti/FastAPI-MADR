@@ -11,7 +11,7 @@ from tcc_my_project.settings import Settings
 
 
 password_hash = PasswordHash.recommended()
-token_ = OAuth2PasswordBearer(tokenUrl="token")
+token_ = OAuth2PasswordBearer(tokenUrl="accounts/token")
 settings = Settings()
 
 
@@ -25,8 +25,7 @@ def verify_password(password, hash):
 
 def get_token(data: dict):
     exp = datetime.now(UTC) + timedelta(minutes=settings.TOKEN_TIME)
-    sub = data.copy()
-    payload = {"sub": sub["email"], "exp": exp}
+    payload = {"sub": data["email"], "exp": exp}
     token = jwt.encode(payload,settings.SECRET_KEY,algorithm=settings.ALGORITHM)
     return token
 
@@ -35,7 +34,7 @@ def authenticated_user(token: str = Depends(token_),session=Depends(get_session)
     try:
         user = jwt.decode(token,settings.SECRET_KEY,algorithms=[settings.ALGORITHM])
         payload = user.get("sub")
-
+      
         if not payload:
             raise HTTPException(
                 detail="Unable to validate credentials!",

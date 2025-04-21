@@ -4,7 +4,7 @@ from sqlalchemy import StaticPool, create_engine
 from sqlalchemy.orm import Session
 from tcc_my_project.database import get_session
 from tcc_my_project.models import User, table_registry
-from tcc_my_project.routers.accounts import app
+from tcc_my_project.app import app
 from tcc_my_project.security import hash
 
 
@@ -49,7 +49,7 @@ def user(session):
 @pytest.fixture
 def token(client, user):
     response = client.post(
-        "/token", data={
+        "accounts/token", data={
             "username": user.email, 
             "password": user.clear_password
         }
