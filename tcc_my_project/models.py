@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Mapped, mapped_column, registry
-
+from sqlalchemy import ForeignKey
 
 table_registry = registry()
 
@@ -19,3 +19,13 @@ class Novelist:
 
     id:Mapped[int] = mapped_column(init=False,primary_key=True)
     name:Mapped[str] = mapped_column(unique=True)
+
+
+@table_registry.mapped_as_dataclass
+class Books:
+    __tablename__ = 'books'
+
+    id: Mapped[int] = mapped_column(primary_key=True,init=False)
+    year: Mapped[int]
+    title: Mapped[str] = mapped_column(unique=True)
+    novelist_id: Mapped[int] = mapped_column(ForeignKey('novelists.id'))

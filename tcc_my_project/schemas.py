@@ -39,3 +39,27 @@ class UpdateNovelists(BaseModel):
 
 class ManyNovelists(BaseModel):
     novelists: list[NovelistsId]
+
+
+#/books
+class CreateBook(BaseModel):
+    year: int
+    title: str
+    novelist_id: int
+
+
+class BookId(BaseModel):
+    id: int
+    year: int
+    title: str
+    novelist_id: int
+
+
+class UpdateBook(BaseModel):
+    year: int | None = None
+    title: str | None = None
+    novelist_id: int | None = None
+
+
+class ListBooksId(BaseModel):
+    livros:list[BookId]
