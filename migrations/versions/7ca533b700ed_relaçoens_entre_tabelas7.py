@@ -1,8 +1,8 @@
-"""nova tabela {Novelists}
+"""relaçoens entre tabelas7
 
-Revision ID: eeedcfc290e4
-Revises: e9c228acc2d0
-Create Date: 2025-04-18 08:37:09.957638
+Revision ID: 7ca533b700ed
+Revises: 94bbee20954b
+Create Date: 2025-04-29 19:40:18.865748
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'eeedcfc290e4'
-down_revision: Union[str, None] = 'e9c228acc2d0'
+revision: str = '7ca533b700ed'
+down_revision: Union[str, None] = '94bbee20954b'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
