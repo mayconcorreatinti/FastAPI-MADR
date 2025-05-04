@@ -62,4 +62,4 @@ class UpdateBook(BaseModel):
 
 
 class ListBooksId(BaseModel):
-    livros:list[BookId]
+    books:list[BookId]

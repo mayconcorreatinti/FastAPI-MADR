@@ -73,7 +73,7 @@ def token(client, user):
 def bookdb(session):
     book=Books(
         year= 1900,
-        title= "livro do heroi",
+        title= "book test",
         novelist_id= 2
     )
     session.add(book)
@@ -81,3 +81,18 @@ def bookdb(session):
     session.refresh(book)
 
     return book
+
+
+
+@pytest.fixture
+def bookdb2(session):
+    book2=Books(
+        year= 1901,
+        title= "book test2",
+        novelist_id= 3
+    )
+    session.add(book2)
+    session.commit()
+    session.refresh(book2)
+
+    return book2

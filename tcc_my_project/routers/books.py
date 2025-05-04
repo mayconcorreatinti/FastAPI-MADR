@@ -10,7 +10,7 @@ from tcc_my_project.security import authenticated_user
 
 router=APIRouter(tags=["books"],prefix="/books")
 
-@router.post("/",status_code=HTTPStatus.OK,response_model=BookId)
+@router.post("/",status_code=HTTPStatus.CREATED,response_model=BookId)
 def create_book(
     book:CreateBook,
     session:Session = Depends(get_session),
@@ -129,7 +129,7 @@ def get_books_with_filter(
     
     response=session.scalars(query.limit(limit).offset(offset))
     
-    return {"livros":response.all()}
+    return {"books":response.all()}
     
 
 
