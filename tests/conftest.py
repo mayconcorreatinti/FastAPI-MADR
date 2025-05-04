@@ -47,6 +47,17 @@ def user(session):
 
 
 @pytest.fixture
+def user2(session):
+    user2 = User(username="string2",email="user@example.com2",password=hash("string"))
+    session.add(user2)
+    session.commit()
+    session.refresh(user2)
+    user2.clear_password = "string"
+
+    return user2
+
+
+@pytest.fixture
 def token(client, user):
     response = client.post(
         "accounts/token", data={
