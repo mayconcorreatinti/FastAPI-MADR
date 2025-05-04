@@ -3,7 +3,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import StaticPool, create_engine
 from sqlalchemy.orm import Session
 from tcc_my_project.database import get_session
-from tcc_my_project.models import User, table_registry,Books
+from tcc_my_project.models import User, table_registry,Books,Novelist
 from tcc_my_project.app import app
 from tcc_my_project.security import hash
 
@@ -96,3 +96,27 @@ def bookdb2(session):
     session.refresh(book2)
 
     return book2
+
+
+@pytest.fixture
+def novelistdb(session):
+    novelist=Novelist(
+        name= "test"
+    )
+    session.add(novelist)
+    session.commit()
+    session.refresh(novelist)
+
+    return novelist
+
+
+@pytest.fixture
+def novelistdb2(session):
+    novelist2=Novelist(
+        name= "test2"
+    )
+    session.add(novelist2)
+    session.commit()
+    session.refresh(novelist2)
+
+    return novelist2

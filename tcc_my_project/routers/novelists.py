@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 router=APIRouter(tags=["novelists"],prefix="/novelists")
 
-@router.post("/",response_model=NovelistsId)
+@router.post("/",response_model=NovelistsId,status_code=HTTPStatus.CREATED)
 def create_novelists(
     novelists:CreateNovelists,
     session:Session = Depends(get_session),
@@ -59,7 +59,8 @@ def delete_novelist(
 
 @router.patch("/{id}",response_model=NovelistsId)
 def update_novelist(
-    id:int,novelists:UpdateNovelists,
+    id:int,
+    novelists:UpdateNovelists,
     session:Session = Depends(get_session),
     authenticated_user= Depends(authenticated_user)
 ):
