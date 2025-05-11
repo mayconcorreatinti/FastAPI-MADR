@@ -1,4 +1,5 @@
 import pytest
+from testcontainers.postgres import PostgresContainer # type: ignore
 from fastapi.testclient import TestClient
 from sqlalchemy import StaticPool, create_engine
 from sqlalchemy.orm import Session
@@ -6,15 +7,32 @@ from tcc_my_project.database import get_session
 from tcc_my_project.models import User, table_registry,Books,Novelist
 from tcc_my_project.app import app
 from tcc_my_project.security import hash
+import factory # type: ignore
+
+
+class UserFactory(factory.Factory):
+    class Meta:
+        model = User  
+
+    username = factory.Sequence(lambda n: f'test{n}')
+    email = factory.LazyAttribute(lambda obj: f'{obj.username}@test.com')
+    password = factory.LazyAttribute(lambda obj: f'{obj.username}@example.com')
+
+
+@pytest.fixture(scope='session')
+def engine():
+    #raising the postgres container, waiting for it to start 
+    # and using it for testing
+    with PostgresContainer('postgres:16',driver='psycopg') as postgres: 
+        _engine = create_engine(postgres.get_connection_url()) 
+
+        with _engine.begin():
+            yield _engine
 
 
 @pytest.fixture
-def session():
-    engine = create_engine(
-        "sqlite:///:memory:",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
+def session(engine):
+    
     table_registry.metadata.create_all(engine)
 
     with Session(engine) as session:
@@ -37,22 +55,24 @@ def client(session):
 
 @pytest.fixture
 def user(session):
-    user = User(username="string",email="user@example.com",password=hash("string"))
+    password="string"
+    user = UserFactory(password=hash(password))
     session.add(user)
     session.commit()
     session.refresh(user)
-    user.clear_password = "string"
+    user.clear_password = password
 
     return user
 
 
 @pytest.fixture
 def user2(session):
-    user2 = User(username="string2",email="user@example.com2",password=hash("string"))
+    password="string"
+    user2 = UserFactory(password=hash(password))
     session.add(user2)
     session.commit()
     session.refresh(user2)
-    user2.clear_password = "string"
+    user2.clear_password = password
 
     return user2
 
@@ -67,35 +87,6 @@ def token(client, user):
     )
 
     return response.json()["access_token"]
-
-
-@pytest.fixture
-def bookdb(session):
-    book=Books(
-        year= 1900,
-        title= "book test",
-        novelist_id= 2
-    )
-    session.add(book)
-    session.commit()
-    session.refresh(book)
-
-    return book
-
-
-
-@pytest.fixture
-def bookdb2(session):
-    book2=Books(
-        year= 1901,
-        title= "book test2",
-        novelist_id= 3
-    )
-    session.add(book2)
-    session.commit()
-    session.refresh(book2)
-
-    return book2
 
 
 @pytest.fixture
@@ -120,3 +111,32 @@ def novelistdb2(session):
     session.refresh(novelist2)
 
     return novelist2
+
+
+@pytest.fixture
+def bookdb(session,novelistdb):
+    book=Books(
+        year= 1900,
+        title= "book test",
+        novelist_id= novelistdb.id
+    )
+    session.add(book)
+    session.commit()
+    session.refresh(book)
+
+    return book
+
+
+@pytest.fixture
+def bookdb2(session,novelistdb):
+    book2=Books(
+        year= 1901,
+        title= "book test2",
+        novelist_id= novelistdb.id
+    )
+    session.add(book2)
+    session.commit()
+    session.refresh(book2)
+
+    return book2
+

@@ -3,7 +3,7 @@ from http import HTTPStatus
 from tcc_my_project.schemas import CreateBook,BookId,Message,UpdateBook,ListBooksId
 from sqlalchemy.orm import Session
 from tcc_my_project.database import get_session
-from tcc_my_project.models import Books
+from tcc_my_project.models import Books,Novelist
 from sqlalchemy import Select
 from tcc_my_project.security import authenticated_user
 
@@ -17,7 +17,14 @@ def create_book(
     user=Depends(authenticated_user)
 ):
     response=session.scalar(Select(Books).where(book.title == Books.title))
+    book_with_novelist=session.scalar(Select(Novelist).where(book.novelist_id == Novelist.id))
 
+    if not book_with_novelist:
+        raise HTTPException(
+            detail="the author does not exist",
+            status_code=HTTPStatus.NOT_FOUND
+        )
+    
     if response:
         raise HTTPException(
             detail="This title already exists!",
@@ -74,7 +81,9 @@ def update_book(
         )
     
     for key,value in books.model_dump(exclude_unset=True).items():
-        if key =='title':
+        if key == "novelist_id":
+            continue
+        if key =="title":
             value = str(" ".join(value.split()).lower())
             bookdb = session.scalar(Select(Books).where(Books.title == value))
             if bookdb:
@@ -120,13 +129,11 @@ def get_books_with_filter(
     query = Select(Books)
 
     if title:
-        query = query.filter(Books.title.contains(title))
+        query = query.where(Books.title.contains(str(" ".join(title.split()).lower())))
 
     if year:
-        query = query.filter(
-            Books.year.contains(year)
-        )
-    
+        query = query.where(Books.year == year)
+        
     response=session.scalars(query.limit(limit).offset(offset))
     
     return {"books":response.all()}
