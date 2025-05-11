@@ -1,5 +1,5 @@
 name: Pipeline
-on: [push, pull_request]
+on: [push,pull_request]
 
 jobs:
   test:
@@ -9,7 +9,7 @@ jobs:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
       ALGORITHM: ${{ secrets.ALGORITHM }}
-      ACCESS_TOKEN_EXPIRE_MINUTES: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
+      TOKEN_TIME: ${{ secrets.TOKEN_TIME}}
 
     steps:
       - name: Copy files from the repository
