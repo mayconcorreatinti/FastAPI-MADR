@@ -179,3 +179,17 @@ def test_get_books_with_filter_title_and_year(client,bookdb,bookdb2):
             }
         ]
     }
+
+
+def test_create_book_error_novelist_id(client,novelistdb,token):
+    response = client.post(
+        "books",json={
+            "year": 1900,
+            "title": "booktest",
+            "novelist_id": novelistdb.id+1
+        },headers={"Authorization":f"bearer {token}"}
+    )
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {"detail":"the author does not exist"}
+    
