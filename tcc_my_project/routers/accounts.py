@@ -3,7 +3,7 @@ from fastapi import Depends, HTTPException,APIRouter
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import Select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from tcc_my_project.database import get_session
 from tcc_my_project.models import User
 from tcc_my_project.schemas import PublicCredentials, Token, Credentials, Message
@@ -13,11 +13,11 @@ from tcc_my_project.security import authenticated_user, get_token, hash, verify_
 router = APIRouter(tags=["accounts"],prefix="/accounts")
 
 @router.post("/", response_model=PublicCredentials,status_code=HTTPStatus.CREATED)
-def create_account(
+async def create_account(
     account: Credentials,
-    session: Session = Depends(get_session)
+    session: AsyncSession = Depends(get_session)
 ):
-    user = session.scalar(
+    user = await session.scalar(
         Select(User).where(
             (account.username == User.username) | (account.email == User.email)
         )
@@ -43,16 +43,16 @@ def create_account(
     )
 
     session.add(response)
-    session.commit()
-    session.refresh(response)
+    await session.commit()
+    await session.refresh(response)
     return response
 
 
 @router.put("/{id}", response_model=PublicCredentials)
-def change_account(
+async def change_account(
     id: int,
     account: Credentials,
-    session: Session = Depends(get_session),
+    session: AsyncSession = Depends(get_session),
     user=Depends(authenticated_user)
 ):
     if id != user.id:
@@ -60,16 +60,17 @@ def change_account(
             detail="unauthorized request", status_code=HTTPStatus.UNAUTHORIZED
         )
 
-    response = session.scalar(Select(User).where(User.id == id))
-
+    response = await session.scalar(Select(User).where(User.id == id))
+    
     try:
         response.username = account.username
         response.email = account.email
         response.password = hash(account.password)
 
 
-        session.commit()
-        session.refresh(response)
+        await session.commit()
+        await session.refresh(response)
+
     except IntegrityError:
         raise HTTPException(
             detail="Username or email already exists!", status_code=HTTPStatus.CONFLICT
@@ -81,7 +82,7 @@ def change_account(
 @router.delete("/{id}", response_model=Message)
 def delete_account(
     id: int,
-    session: Session = Depends(get_session),
+    session: AsyncSession = Depends(get_session),
     user=Depends(authenticated_user)
 ):
     if id != user.id:
@@ -98,11 +99,11 @@ def delete_account(
 
 
 @router.post("/token", status_code=HTTPStatus.CREATED, response_model=Token)
-def create_token(
+async def create_token(
     data: OAuth2PasswordRequestForm = Depends(),
-    session: Session = Depends(get_session)
+    session: AsyncSession = Depends(get_session)
 ):
-    response = session.scalar(Select(User).where(User.email == data.username))
+    response = await session.scalar(Select(User).where(User.email == data.username))
 
     if response is None:
         raise HTTPException(

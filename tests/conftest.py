@@ -1,4 +1,6 @@
 import pytest
+import pytest_asyncio
+from sqlalchemy.ext.asyncio import AsyncSession,create_async_engine
 from testcontainers.postgres import PostgresContainer # type: ignore
 from fastapi.testclient import TestClient
 from sqlalchemy import StaticPool, create_engine
@@ -8,8 +10,14 @@ from tcc_my_project.models import User, table_registry,Books,Novelist
 from tcc_my_project.app import app
 from tcc_my_project.security import hash
 import factory # type: ignore
+import sys
+import asyncio
 
 
+if sys.platform == 'win32':
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+    
+    
 class UserFactory(factory.Factory):
     class Meta:
         model = User  
@@ -19,26 +27,21 @@ class UserFactory(factory.Factory):
     password = factory.LazyAttribute(lambda obj: f'{obj.username}@example.com')
 
 
-@pytest.fixture(scope='session')
-def engine():
+@pytest_asyncio.fixture
+async def session():
     #raising the postgres container, waiting for it to start 
     # and using it for testing
     with PostgresContainer('postgres:16',driver='psycopg') as postgres: 
-        _engine = create_engine(postgres.get_connection_url()) 
+        engine = create_async_engine(postgres.get_connection_url()) 
 
-        with _engine.begin():
-            yield _engine
+        async with engine.begin() as conn: 
+            await conn.run_sync(table_registry.metadata.create_all) 
 
+        async with AsyncSession(engine, expire_on_commit=False) as session:
+            yield session
 
-@pytest.fixture
-def session(engine):
-    
-    table_registry.metadata.create_all(engine)
-
-    with Session(engine) as session:
-        yield session
-
-    table_registry.metadata.drop_all(engine)
+        async with engine.begin() as conn:
+            await conn.run_sync(table_registry.metadata.drop_all)
 
 
 @pytest.fixture
@@ -53,13 +56,13 @@ def client(session):
     app.dependency_overrides.clear()
 
 
-@pytest.fixture
-def user(session):
+@pytest_asyncio.fixture
+async def user(session):
     password="string"
     user = UserFactory(password=hash(password))
     session.add(user)
-    session.commit()
-    session.refresh(user)
+    await session.commit()
+    await session.refresh(user)
     user.clear_password = password
 
     return user

@@ -30,7 +30,7 @@ def get_token(data: dict):
     return token
 
 
-def authenticated_user(token: str = Depends(token_),session=Depends(get_session)):
+async def authenticated_user(token: str = Depends(token_),session=Depends(get_session)):
     try:
         user = jwt.decode(token,settings.SECRET_KEY,algorithms=[settings.ALGORITHM])
         payload = user.get("sub")
@@ -47,7 +47,7 @@ def authenticated_user(token: str = Depends(token_),session=Depends(get_session)
             status_code=HTTPStatus.UNAUTHORIZED,
         )
 
-    authenticated_user = session.scalar(Select(User).where(User.email == payload))
+    authenticated_user = await session.scalar(Select(User).where(User.email == payload))
 
     if not authenticated_user:
         raise HTTPException(
