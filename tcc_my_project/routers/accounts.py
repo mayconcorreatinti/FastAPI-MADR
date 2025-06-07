@@ -80,7 +80,7 @@ async def change_account(
 
 
 @router.delete("/{id}", response_model=Message)
-def delete_account(
+async def delete_account(
     id: int,
     session: AsyncSession = Depends(get_session),
     user=Depends(authenticated_user)
@@ -90,10 +90,10 @@ def delete_account(
             detail="unauthorized request", status_code=HTTPStatus.UNAUTHORIZED
         )
 
-    response = session.scalar(Select(User).where(User.id == id))
+    response = await session.scalar(Select(User).where(User.id == id))
 
     session.delete(response)
-    session.commit()
+    await session.commit()
 
     return {"message": "User deleted!"}
 
