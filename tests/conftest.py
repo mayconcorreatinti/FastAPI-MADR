@@ -3,8 +3,6 @@ import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession,create_async_engine
 from testcontainers.postgres import PostgresContainer # type: ignore
 from fastapi.testclient import TestClient
-from sqlalchemy import StaticPool, create_engine
-from sqlalchemy.orm import Session
 from tcc_my_project.database import get_session
 from tcc_my_project.models import User, table_registry,Books,Novelist
 from tcc_my_project.app import app
@@ -27,13 +25,17 @@ class UserFactory(factory.Factory):
     password = factory.LazyAttribute(lambda obj: f'{obj.username}@example.com')
 
 
-@pytest_asyncio.fixture
-async def session():
+@pytest.fixture(scope='session')
+def engine():
     #raising the postgres container, waiting for it to start 
     # and using it for testing
-    with PostgresContainer('postgres:16',driver='psycopg') as postgres: 
-        engine = create_async_engine(postgres.get_connection_url()) 
+    with PostgresContainer('postgres:16', driver='psycopg') as postgres:
+        _engine = create_async_engine(postgres.get_connection_url())
+        yield _engine
 
+
+@pytest_asyncio.fixture
+async def session(engine):
         async with engine.begin() as conn: 
             await conn.run_sync(table_registry.metadata.create_all) 
 
