@@ -1,5 +1,5 @@
 name: Pipeline
-on: [push,pull_request]
+on: [push, pull_request]
 
 jobs:
   test:
@@ -9,21 +9,27 @@ jobs:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
       ALGORITHM: ${{ secrets.ALGORITHM }}
-      TOKEN_TIME: ${{ secrets.TOKEN_TIME}}
+      TOKEN_TIME: ${{ secrets.TOKEN_TIME }}
 
     steps:
       - name: Copy files from the repository
         uses: actions/checkout@v3
 
-      - name: Install python
+      - name: Install Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.12'
 
-      - name: Install poetry
+      - name: Install system dependencies
+        run: sudo apt-get install -y libkrb5-dev
+
+      - name: Install Poetry
         run: pipx install poetry
 
-      - name: Install gssapi
+      - name: Clear Poetry Cache
+        run: poetry cache clear --all pypi
+
+      - name: Install gssapi with Poetry
         run: poetry add gssapi@1.9.0
 
       - name: Install dependencies
