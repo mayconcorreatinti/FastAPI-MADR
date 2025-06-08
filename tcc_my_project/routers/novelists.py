@@ -5,20 +5,19 @@ from sqlalchemy import Select
 from tcc_my_project.database import get_session
 from tcc_my_project.security import authenticated_user
 from http import HTTPStatus
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 
 router=APIRouter(tags=["novelists"],prefix="/novelists")
 
 @router.post("/",response_model=NovelistsId,status_code=HTTPStatus.CREATED)
-async def create_novelists(
+def create_novelists(
     novelists:CreateNovelists,
-    session: AsyncSession = Depends(get_session),
+    session:Session = Depends(get_session),
     authenticated_user= Depends(authenticated_user)
 ):
     
-    name = await session.scalar(Select(Novelist).where(Novelist.name == novelists.name))
+    name=session.scalar(Select(Novelist).where(Novelist.name == novelists.name))
 
     if name:
         raise HTTPException(
@@ -32,19 +31,19 @@ async def create_novelists(
     )
 
     session.add(novelist)
-    await session.commit()
-    await session.refresh(novelist)
+    session.commit()
+    session.refresh(novelist)
 
     return novelist
 
 
 @router.delete("/{id}",response_model=Message)
-async def delete_novelist(
+def delete_novelist(
    id:int,
-   session:AsyncSession = Depends(get_session),
+   session:Session = Depends(get_session),
    authenticated_user= Depends(authenticated_user)
 ):
-   novelist= await session.scalar(Select(Novelist).where(id == Novelist.id))
+   novelist=session.scalar(Select(Novelist).where(id == Novelist.id))
 
    if not novelist:
        raise HTTPException(
@@ -53,19 +52,19 @@ async def delete_novelist(
        )
    
    session.delete(novelist)
-   await session.commit()
+   session.commit()
    
    return {"message":"Novelist deleted from MADR"}
 
 
 @router.patch("/{id}",response_model=NovelistsId)
-async def update_novelist(
+def update_novelist(
     id:int,
     novelists:UpdateNovelists,
-    session:AsyncSession = Depends(get_session),
+    session:Session = Depends(get_session),
     authenticated_user= Depends(authenticated_user)
 ):
-    novelist=await session.scalar(Select(Novelist).where(id == Novelist.id))
+    novelist=session.scalar(Select(Novelist).where(id == Novelist.id))
 
     if not novelist:
         raise HTTPException(
@@ -76,7 +75,7 @@ async def update_novelist(
     for key,value in novelists.model_dump(exclude_unset=True).items():
         if value:
             sanitized_value=" ".join(value.split()).lower()
-            novelist_patch=await session.scalar(Select(Novelist).where(Novelist.name == sanitized_value))
+            novelist_patch=session.scalar(Select(Novelist).where(Novelist.name == sanitized_value))
             if novelist_patch:
                 raise HTTPException(
                     detail="This name already exists in novelists!",
@@ -84,18 +83,18 @@ async def update_novelist(
                 )
             
             setattr(novelist,key,sanitized_value)
-            await session.commit()
-            await session.refresh(novelist)
+            session.commit()
+            session.refresh(novelist)
 
     return novelist
    
 
 @router.get("/{id}",response_model=NovelistsId,status_code=HTTPStatus.OK)
-async def get_novelist(
+def get_novelist(
     id:int,
-    session:AsyncSession = Depends(get_session)
+    session:Session = Depends(get_session)
 ):
-    novelist= await session.scalar(Select(Novelist).where(id == Novelist.id))
+    novelist=session.scalar(Select(Novelist).where(id == Novelist.id))
 
     if not novelist:
         raise HTTPException(
@@ -107,11 +106,11 @@ async def get_novelist(
 
 
 @router.get("/",response_model=ManyNovelists)
-async def get_novelist_filter(
+def get_novelist_filter(
     name:str = Query(None),
     offset:int = Query(None),
     limit:str = Query(None),
-    session:AsyncSession = Depends(get_session)
+    session:Session = Depends(get_session)
 ):
     
     query=Select(Novelist)
@@ -119,6 +118,6 @@ async def get_novelist_filter(
     if name:
         query=query.filter(Novelist.name.contains(name))
 
-    novelist= await session.scalars(query.offset(offset).limit(limit))
+    novelist=session.scalars(query.offset(offset).limit(limit))
 
     return {'novelists':novelist.all()}

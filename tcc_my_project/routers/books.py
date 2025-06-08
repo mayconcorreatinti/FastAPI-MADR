@@ -4,7 +4,6 @@ from tcc_my_project.schemas import CreateBook,BookId,Message,UpdateBook,ListBook
 from sqlalchemy.orm import Session
 from tcc_my_project.database import get_session
 from tcc_my_project.models import Books,Novelist
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import Select
 from tcc_my_project.security import authenticated_user
 
@@ -12,13 +11,13 @@ from tcc_my_project.security import authenticated_user
 router=APIRouter(tags=["books"],prefix="/books")
 
 @router.post("/",status_code=HTTPStatus.CREATED,response_model=BookId)
-async def create_book(
+def create_book(
     book:CreateBook,
-    session:AsyncSession = Depends(get_session),
+    session:Session = Depends(get_session),
     user=Depends(authenticated_user)
 ):
-    response= await session.scalar(Select(Books).where(book.title == Books.title))
-    book_with_novelist= await session.scalar(Select(Novelist).where(book.novelist_id == Novelist.id))
+    response=session.scalar(Select(Books).where(book.title == Books.title))
+    book_with_novelist=session.scalar(Select(Novelist).where(book.novelist_id == Novelist.id))
 
     if not book_with_novelist:
         raise HTTPException(
@@ -39,20 +38,20 @@ async def create_book(
     )
 
     session.add(bookid)
-    await session.commit()
-    await session.refresh(bookid)
+    session.commit()
+    session.refresh(bookid)
 
 
     return bookid
 
 
 @router.delete("/{id}",status_code=HTTPStatus.OK,response_model=Message)
-async def delete_book(
+def delete_book(
     id:int,
     user = Depends(authenticated_user),
-    session:AsyncSession = Depends(get_session)
+    session:Session = Depends(get_session)
 ):
-    response= await session.scalar(Select(Books).where(Books.id == id))
+    response=session.scalar(Select(Books).where(Books.id == id))
 
     if not response:
         raise HTTPException(
@@ -61,19 +60,19 @@ async def delete_book(
         )
     
     session.delete(response)
-    await session.commit()
+    session.commit()
 
     return {"message":"Book deleted in MADR"}
 
 
 @router.patch("/{id}",response_model=BookId)
-async def update_book(
+def update_book(
     id:int,
     books:UpdateBook,
-    session:AsyncSession = Depends(get_session),
+    session:Session =Depends(get_session),
     user=Depends(authenticated_user)
 ):
-    book = await session.scalar(Select(Books).where(Books.id == id))
+    book = session.scalar(Select(Books).where(Books.id == id))
 
     if not book:
         raise HTTPException(
@@ -86,7 +85,7 @@ async def update_book(
             continue
         if key =="title":
             value = str(" ".join(value.split()).lower())
-            bookdb = await session.scalar(Select(Books).where(Books.title == value))
+            bookdb = session.scalar(Select(Books).where(Books.title == value))
             if bookdb:
                 raise HTTPException(
                     detail="This title already exists!",
@@ -97,18 +96,18 @@ async def update_book(
             setattr(book,key,value)
     
     session.add(book)
-    await session.commit()
-    await session.refresh(book)
+    session.commit()
+    session.refresh(book)
 
     return book
 
 
 @router.get("/{id}",response_model=BookId)
-async def get_book(
+def get_book(
     id:int,
-    session:AsyncSession = Depends(get_session)
+    session:Session =Depends(get_session)
 ):
-    book= await session.scalar(Select(Books).where(Books.id == id))
+    book=session.scalar(Select(Books).where(Books.id == id))
 
     if not book:
         raise HTTPException(
@@ -120,12 +119,12 @@ async def get_book(
 
 
 @router.get("/",response_model=ListBooksId)
-async def get_books_with_filter(
+def get_books_with_filter(
     title: str | None = None,
     year: int | None = None,
     offset: int | None = None,
     limit: int | None = None,
-    session:AsyncSession = Depends(get_session)
+    session:Session = Depends(get_session)
 ):
     query = Select(Books)
 
@@ -135,7 +134,7 @@ async def get_books_with_filter(
     if year:
         query = query.where(Books.year == year)
         
-    response= await session.scalars(query.limit(limit).offset(offset))
+    response=session.scalars(query.limit(limit).offset(offset))
     
     return {"books":response.all()}
     
