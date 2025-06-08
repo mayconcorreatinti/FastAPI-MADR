@@ -9,33 +9,21 @@ jobs:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
       ALGORITHM: ${{ secrets.ALGORITHM }}
-      TOKEN_TIME: ${{ secrets.TOKEN_TIME }}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
 
     steps:
       - name: Copy files from the repository
         uses: actions/checkout@v3
 
-      - name: Install Python
+      - name: Install python
         uses: actions/setup-python@v4
         with:
           python-version: '3.12'
 
-      - name: Install system dependencies
-        run: sudo apt-get install -y libkrb5-dev krb5-user
-
-      - name: Check krb5-config availability
-        run: which krb5-config || echo "krb5-config not found"
-
-      - name: Install Poetry
+      - name: install poetry
         run: pipx install poetry
 
-      - name: Clear Poetry Cache
-        run: poetry cache clear --all pypi
-
-      - name: Install gssapi manually (test)
-        run: pip install gssapi
-
-      - name: Install dependencies
+      - name: install dependencies
         run: poetry install
 
       - name: Run tests
