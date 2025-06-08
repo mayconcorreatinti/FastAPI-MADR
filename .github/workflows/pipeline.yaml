@@ -20,10 +20,10 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: install poetry
+      - name: Install poetry
         run: pipx install poetry
 
-      - name: install dependencies
+      - name: Install dependencies
         run: poetry install
 
       - name: Run tests
