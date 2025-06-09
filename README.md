@@ -12,45 +12,44 @@ Meu Acervo Digital de Romances é um Trabalho de Conclusão de Curso (TCC) desen
 Para executar o projeto localmente, siga os passos abaixo:
 
 1. Clone o repositório:
-
    ```bash
    git clone git@github.com:mayconcorreatinti/FastAPI-MADR.git
    ```
 
 2. Instale as ferramentas necessárias:
-
    ```bash
    pip install pipx
    pipx install poetry
    ```
 
 3. Instale as dependências do projeto:
-
    ```bash
    poetry install
    ```
 
 4. Ative o ambiente virtual:
-
    ```bash
    poetry shell
    ```
 
-5. Execute os testes:
+5. Subir contêiner:
+   ```bash
+   docker compose up
+   ```
 
+6. Execute os testes:
    ```bash
    task test
    ```
 
-6. Inicie a aplicação:
-
+7. Inicie a aplicação:
    ```bash
    task run
    ```
 
 ## Notas
 
-- Certifique-se de que o Python e o Git estão instalados no seu sistema antes de iniciar.
+- Certifique-se de que o Python,Git e docker estão instalados no seu sistema antes de iniciar.
 - Em caso de erros, verifique se o arquivo `pyproject.toml` está presente e configurado corretamente.
 
 
