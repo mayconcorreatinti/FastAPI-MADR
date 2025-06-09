@@ -27,13 +27,17 @@ class UserFactory(factory.Factory):
     password = factory.LazyAttribute(lambda obj: f'{obj.username}@example.com')
 
 
-@pytest_asyncio.fixture
-async def session():
+@pytest.fixture(scope='session')
+def engine():
     #raising the postgres container, waiting for it to start 
     # and using it for testing
-    with PostgresContainer('postgres:16',driver='psycopg') as postgres: 
-        engine = create_async_engine(postgres.get_connection_url()) 
+    with PostgresContainer('postgres:16', driver='psycopg') as postgres:
+        _engine = create_async_engine(postgres.get_connection_url())
+        yield _engine
 
+
+@pytest_asyncio.fixture
+async def session(engine):
         async with engine.begin() as conn: 
             await conn.run_sync(table_registry.metadata.create_all) 
 
@@ -43,7 +47,7 @@ async def session():
         async with engine.begin() as conn:
             await conn.run_sync(table_registry.metadata.drop_all)
 
-
+            
 @pytest.fixture
 def client(session):
     def get_session_override():
@@ -68,13 +72,13 @@ async def user(session):
     return user
 
 
-@pytest.fixture
-def user2(session):
+@pytest_asyncio.fixture
+async def user2(session):
     password="string"
     user2 = UserFactory(password=hash(password))
     session.add(user2)
-    session.commit()
-    session.refresh(user2)
+    await session.commit()
+    await session.refresh(user2)
     user2.clear_password = password
 
     return user2
@@ -92,54 +96,54 @@ def token(client, user):
     return response.json()["access_token"]
 
 
-@pytest.fixture
-def novelistdb(session):
+@pytest_asyncio.fixture
+async def novelistdb(session):
     novelist=Novelist(
         name= "test"
     )
     session.add(novelist)
-    session.commit()
-    session.refresh(novelist)
+    await session.commit()
+    await session.refresh(novelist)
 
     return novelist
 
 
-@pytest.fixture
-def novelistdb2(session):
+@pytest_asyncio.fixture
+async def novelistdb2(session):
     novelist2=Novelist(
         name= "test2"
     )
     session.add(novelist2)
-    session.commit()
-    session.refresh(novelist2)
+    await session.commit()
+    await session.refresh(novelist2)
 
     return novelist2
 
 
-@pytest.fixture
-def bookdb(session,novelistdb):
+@pytest_asyncio.fixture
+async def bookdb(session,novelistdb):
     book=Books(
         year= 1900,
         title= "book test",
         novelist_id= novelistdb.id
     )
     session.add(book)
-    session.commit()
-    session.refresh(book)
+    await session.commit()
+    await session.refresh(book)
 
     return book
 
 
-@pytest.fixture
-def bookdb2(session,novelistdb):
+@pytest_asyncio.fixture
+async def bookdb2(session,novelistdb):
     book2=Books(
         year= 1901,
         title= "book test2",
         novelist_id= novelistdb.id
     )
     session.add(book2)
-    session.commit()
-    session.refresh(book2)
+    await session.commit()
+    await session.refresh(book2)
 
     return book2
 
