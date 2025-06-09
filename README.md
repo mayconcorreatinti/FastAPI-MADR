@@ -15,34 +15,37 @@ Para executar o projeto localmente, siga os passos abaixo:
    ```bash
    git clone git@github.com:mayconcorreatinti/FastAPI-MADR.git
    ```
-
-2. Instale as ferramentas necessárias:
+2. Abra o arquivo:
+   ```bash
+   cd FastAPI-MADR 
+   ```
+3. Instale as ferramentas necessárias:
    ```bash
    pip install pipx
    pipx install poetry
    ```
 
-3. Instale as dependências do projeto:
+4. Instale as dependências do projeto:
    ```bash
    poetry install
    ```
 
-4. Ative o ambiente virtual:
+5. Ative o ambiente virtual:
    ```bash
    poetry shell
    ```
 
-5. Subir contêiner:
+6. Subir contêiner:
    ```bash
    docker compose up
    ```
 
-6. Execute os testes:
+7. Execute os testes:
    ```bash
    task test
    ```
 
-7. Inicie a aplicação:
+8. Inicie a aplicação:
    ```bash
    task run
    ```
