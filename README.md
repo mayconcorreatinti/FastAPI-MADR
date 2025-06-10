@@ -6,6 +6,7 @@ Meu Acervo Digital de Romances é um Trabalho de Conclusão de Curso (TCC) desen
 - Python 3.8 ou superior
 - Git
 - Pipx e Poetry (instalados conforme os passos abaixo)
+- Docker
 
 ## Como Usar
 
