@@ -1,6 +1,7 @@
 # 📚 MADR FastAPI 
 
-Meu Acervo Digital de Romances é um Trabalho de Conclusão de Curso (TCC) desenvolvido com base nos conhecimentos adquiridos no curso, focado no uso do framework FastAPI para construção de APIs modernas e performáticas. O MADR é uma aplicação web que permite aos usuários gerenciar um acervo digital de romances, oferecendo funcionalidades para cadastro, consulta, edição e exclusão de informações sobre livros, usuários e autores. A aplicação foi projetada para ser intuitiva, escalável e eficiente, utilizando as capacidades assíncronas do FastAPI e boas práticas de desenvolvimento de software.
+
+**Meu Acervo Digital de Romances** é um Trabalho de Conclusão de Curso (TCC) desenvolvido com base nos conhecimentos adquiridos no curso, focado no uso do framework FastAPI para construção de APIs modernas e performáticas. O MADR é uma aplicação web que permite aos usuários gerenciar um acervo digital de romances, oferecendo funcionalidades para cadastro, consulta, edição e exclusão de informações sobre livros, usuários e autores. A aplicação foi projetada para ser intuitiva, escalável e eficiente, utilizando as capacidades assíncronas do FastAPI e boas práticas de desenvolvimento de software.
 ## Pré-requisitos
 
 - Python 3.8 ou superior
@@ -60,3 +61,4 @@ Para executar o projeto localmente, siga os passos abaixo:
 ## Autor
 
 Desenvolvido por Maycon Corrêa Tinti, baseado no curso de FastAPI ministrado por Eduardo Mendes.
+
